@@ -1,15 +1,19 @@
-[tool.poetry]
+[project]
 name = "rank-choicer"
 version = "0.1.0"
 description = ""
-authors = ["Frank Corso <frank@frankcorso.me>"]
+authors = [
+    {name = "Frank Corso",email = "frank@frankcorso.me"}
+]
 readme = "README.md"
-packages = [{include = "rank_choicer", from = "src"}]
+requires-python = ">=3.10"
+dependencies = [
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
+[tool.poetry]
+packages = [{include = "rank_choicer", from = "src"}]
 
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
