@@ -82,6 +82,30 @@ class RankChoiceCounter:
         """Clear all stored round results."""
         self._round_results = []
 
+    def count_votes(self, votes: dict[str, list[str]]) -> str:
+        """
+        Counts the votes and returns the winning option
+
+        Args:
+            votes: Dictionary of votes to validate
+
+        Raises:
+            ValueError: If any vote contains invalid options or is malformed
+        """
+        self._validate_votes(votes)
+        self.clear_results()
+
+        # Make a copy of votes to work with
+        current_votes = {voter: prefs.copy() for voter, prefs in votes.items()}
+
+        round_num = 1
+        winner = None
+
+        while winner is None:
+            winner = ''
+
+        return winner
+
     def _validate_votes(self, votes: dict[str, list[str]]) -> None:
         """
         Internal method to validate votes against current options.
