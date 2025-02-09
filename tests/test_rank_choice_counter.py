@@ -157,3 +157,92 @@ def test_validate_votes_partial_preferences():
     }
     # Should not raise any exceptions
     counter._validate_votes(votes)
+
+
+def test_single_round_clear_winner():
+    """Test round calculation when there's a clear majority winner"""
+    counter = RankChoiceCounter(["A", "B", "C"])
+    votes = {
+        "v1": ["A", "B", "C"],
+        "v2": ["A", "C"],
+        "v3": ["A", "B"]
+    }
+    result = counter._calculate_round(1, votes)
+
+    assert result.vote_counts == {"A": 3, "B": 0, "C": 0}
+    assert result.winner == "A"
+    assert result.eliminated_option is None
+
+def test_single_round_no_winner():
+    """Test round calculation when no candidate has majority"""
+    counter = RankChoiceCounter(["A", "B", "C"])
+    votes = {
+        "v1": ["A", "B", "C"],
+        "v2": ["A", "C", "B"],
+        "v3": ["B", "C", "A"],
+        "v4": ["B", "C", "A"],
+        "v5": ["C", "B", "A"]
+    }
+    result = counter._calculate_round(1, votes)
+
+    assert result.vote_counts == {"A": 2, "B": 2, "C": 1}
+    assert result.winner is None
+    assert result.eliminated_option == "C"
+
+
+def test_single_round_with_eliminated_candidates():
+    """Test round calculation with some candidates already eliminated"""
+    counter = RankChoiceCounter(["A", "B", "C"])
+    # C was eliminated in previous round
+    votes = {
+        "v1": ["A", "B"],
+        "v2": ["A", "B"],
+        "v3": ["B", "A"],
+        "v4": ["B", "A"],
+        "v5": ["B", "A"]
+    }
+    result = counter._calculate_round(2, votes)
+
+    assert result.vote_counts == {"A": 2, "B": 3, "C": 0} # C should still be present in totals
+    assert result.winner == "B"
+    assert result.eliminated_option is None
+
+
+def test_count_votes_immediate_winner():
+    """Test when a candidate wins in the first round"""
+    counter = RankChoiceCounter(["A", "B", "C"])
+    votes = {
+        "v1": ["A", "B", "C"],
+        "v2": ["A", "C", "B"],
+        "v3": ["A", "B", "C"]
+    }
+    winner = counter.count_votes(votes)
+    results = counter.get_round_results()
+
+    assert winner == "A"
+    assert len(results) == 1
+    assert results[0].winner == "A"
+    assert results[0].round_number == 1
+
+
+def test_count_votes_two_rounds():
+    """Test when winner is determined after one elimination"""
+    counter = RankChoiceCounter(["A", "B", "C"])
+    votes = {
+        "v1": ["A", "B", "C"],
+        "v2": ["B", "A", "C"],
+        "v3": ["C", "A", "B"],
+        "v4": ["A", "C", "B"]
+    }
+    winner = counter.count_votes(votes)
+    results = counter.get_round_results()
+
+    assert winner == "A"
+    assert len(results) == 2
+    # First round should have eliminated C
+    assert results[0].winner is None
+    assert results[0].eliminated_option == 'C'
+    assert results[0].round_number == 1
+    # Second round should have a winner
+    assert results[1].winner == winner
+    assert results[1].round_number == 2
