@@ -1,8 +1,8 @@
 from collections import Counter
 import random
 
-from src.rank_choicer.round_result import RoundResult
-from src.rank_choicer.elimination_strategy import EliminationStrategy
+from .round_result import RoundResult
+from .elimination_strategy import EliminationStrategy
 
 
 class RankChoiceCounter:
