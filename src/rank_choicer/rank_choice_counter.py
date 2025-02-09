@@ -1,5 +1,6 @@
 from src.rank_choicer.round_result import RoundResult
 
+
 class RankChoiceCounter:
     def __init__(self, options: list[str]) -> None:
         """
@@ -109,7 +110,9 @@ class RankChoiceCounter:
             # Check that all preferences are valid options
             invalid_options = set(preferences) - options_set
             if invalid_options:
-                raise ValueError(f"Invalid options in vote from {voter}: {invalid_options}")
+                raise ValueError(
+                    f"Invalid options in vote from {voter}: {invalid_options}"
+                )
 
             # Check for duplicates in preferences
             if len(set(preferences)) != len(preferences):

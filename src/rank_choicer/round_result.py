@@ -4,6 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class RoundResult:
     """Stores the results of a single round of ranked choice counting"""
+
     round_number: int
     vote_counts: dict[str, int]
     eliminated_option: str | None

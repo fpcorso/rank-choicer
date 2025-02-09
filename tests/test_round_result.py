@@ -9,7 +9,7 @@ def test_round_result_initialization():
         round_number=1,
         vote_counts=vote_counts,
         eliminated_option="Option B",
-        winner=None
+        winner=None,
     )
 
     assert result.round_number == 1
