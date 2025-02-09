@@ -1,3 +1,4 @@
+from src.rank_choicer.round_result import RoundResult
 
 class RankChoiceCounter:
     def __init__(self, options: list[str]) -> None:
@@ -10,12 +11,18 @@ class RankChoiceCounter:
         if not options:
             raise ValueError("Options list cannot be empty")
 
+        # Sanitize options
+        sanitized_options = [opt.strip() for opt in options]
+
         # Check for duplicates by converting to set and comparing lengths
-        if len(set(options)) != len(options):
+        if len(set(sanitized_options)) != len(sanitized_options):
             raise ValueError("Duplicate options are not allowed")
 
         # Store a copy of the options to prevent external modification
-        self._options = options.copy()
+        self._options = sanitized_options.copy()
+
+        # Initialize results
+        self._round_results: list[RoundResult] = []
 
     @property
     def options(self) -> list[str]:
@@ -69,3 +76,41 @@ class RankChoiceCounter:
             raise ValueError("Option does not exist")
 
         self._options.remove(option)
+
+    def clear_results(self) -> None:
+        """Clear all stored round results."""
+        self._round_results = []
+
+    def _validate_votes(self, votes: dict[str, list[str]]) -> None:
+        """
+        Internal method to validate votes against current options.
+
+        Args:
+            votes: Dictionary of votes to validate
+
+        Raises:
+            ValueError: If any vote contains invalid options or is malformed
+        """
+        options_set = set(self._options.copy())
+        for voter, preferences in votes.items():
+            if not isinstance(voter, str) or not voter.strip():
+                raise ValueError("Invalid voter")
+
+            if len(preferences) > len(self._options):
+                raise ValueError(f"Too many preferences from {voter}")
+
+            if not preferences:
+                raise ValueError(f"Empty preference list from {voter}")
+
+            # Check for None or invalid types
+            if any(not isinstance(pref, str) for pref in preferences):
+                raise ValueError(f"Invalid vote type from {voter}")
+
+            # Check that all preferences are valid options
+            invalid_options = set(preferences) - options_set
+            if invalid_options:
+                raise ValueError(f"Invalid options in vote from {voter}: {invalid_options}")
+
+            # Check for duplicates in preferences
+            if len(set(preferences)) != len(preferences):
+                raise ValueError(f"Duplicate preferences in vote from {voter}")

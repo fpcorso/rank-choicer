@@ -76,3 +76,93 @@ def test_options_immutability():
     # Original options should be unchanged
     assert "Option C" not in counter.options
     assert len(counter.options) == 2
+
+
+def test_validate_votes_valid_input():
+    """Test that valid votes pass validation"""
+    counter = RankChoiceCounter(["Option A", "Option B", "Option C"])
+    votes = {
+        "voter1": ["Option A", "Option B", "Option C"],
+        "voter2": ["Option B", "Option C", "Option A"]
+    }
+    # Should not raise any exceptions
+    counter._validate_votes(votes)
+
+
+def test_validate_votes_invalid_option():
+    """Test that votes containing invalid options raise ValueError"""
+    counter = RankChoiceCounter(["Option A", "Option B", "Option C"])
+    votes = {
+        "voter1": ["Option A", "Option B", "Option C"],
+        "voter2": ["Option D", "Option B", "Option A"]  # Option D doesn't exist
+    }
+    with pytest.raises(ValueError) as exc_info:
+        counter._validate_votes(votes)
+    assert "Invalid options in vote from voter2" in str(exc_info.value)
+
+
+def test_validate_votes_duplicate_preferences():
+    """Test that votes containing duplicate preferences raise ValueError"""
+    counter = RankChoiceCounter(["Option A", "Option B", "Option C"])
+    votes = {
+        "voter1": ["Option A", "Option B", "Option A"]  # Option A appears twice
+    }
+    with pytest.raises(ValueError) as exc_info:
+        counter._validate_votes(votes)
+    assert "Duplicate preferences in vote from voter1" in str(exc_info.value)
+
+
+def test_validate_votes_empty_preferences():
+    """Test that empty preference list raises ValueError"""
+    counter = RankChoiceCounter(["Option A", "Option B", "Option C"])
+    votes = {
+        "voter1": []
+    }
+    with pytest.raises(ValueError) as exc_info:
+        counter._validate_votes(votes)
+    assert "Empty preference list from voter1" in str(exc_info.value)
+
+
+def test_validate_votes_none_preferences():
+    """Test that None in preferences raises ValueError"""
+    counter = RankChoiceCounter(["Option A", "Option B", "Option C"])
+    votes = {
+        "voter1": ["Option A", None, "Option B"]
+    }
+    with pytest.raises(ValueError) as exc_info:
+        counter._validate_votes(votes)
+    assert "Invalid vote type from voter1" in str(exc_info.value)
+
+
+def test_validate_votes_invalid_voter_id():
+    """Test that invalid voter IDs raise ValueError"""
+    counter = RankChoiceCounter(["Option A", "Option B", "Option C"])
+    votes = {
+        "": ["Option A", "Option B", "Option C"]  # Empty voter ID
+    }
+    with pytest.raises(ValueError) as exc_info:
+        counter._validate_votes(votes)
+    assert "Invalid voter" in str(exc_info.value)
+
+
+def test_validate_votes_too_many_preferences():
+    """Test that having more preferences than options raises ValueError"""
+    counter = RankChoiceCounter(["Option A", "Option B"])
+    votes = {
+        "voter1": ["Option A", "Option B", "Option B"]  # More preferences than options
+    }
+    with pytest.raises(ValueError) as exc_info:
+        counter._validate_votes(votes)
+    assert "Too many preferences from voter1" in str(exc_info.value)
+
+
+
+def test_validate_votes_partial_preferences():
+    """Test that partial preference lists are valid"""
+    counter = RankChoiceCounter(["Option A", "Option B", "Option C"])
+    votes = {
+        "voter1": ["Option A", "Option B"],  # Only two preferences
+        "voter2": ["Option C"]  # Only one preference
+    }
+    # Should not raise any exceptions
+    counter._validate_votes(votes)
