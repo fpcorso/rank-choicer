@@ -1,3 +1,5 @@
+from collections import Counter
+
 from src.rank_choicer.round_result import RoundResult
 
 
@@ -102,9 +104,31 @@ class RankChoiceCounter:
         winner = None
 
         while winner is None:
-            winner = ''
+            round_result = self._calculate_round(round_num, current_votes)
+            self._round_results.append(round_result)
+
+            if round_result.winner:
+                winner = round_result.winner
+                break
+
+            # Remove the eliminated option from all vote lists
+            eliminated = round_result.eliminated_option
+            for prefs in current_votes.values():
+                if eliminated in prefs:
+                    prefs.remove(eliminated)
+
+            round_num += 1
 
         return winner
+
+    def get_round_results(self) -> list[RoundResult]:
+        """
+        Get all rounds of processing.
+
+        Returns:
+            List of RoundResult objects, one for each round of counting
+        """
+        return self._round_results.copy()
 
     def _validate_votes(self, votes: dict[str, list[str]]) -> None:
         """
@@ -141,3 +165,44 @@ class RankChoiceCounter:
             # Check for duplicates in preferences
             if len(set(preferences)) != len(preferences):
                 raise ValueError(f"Duplicate preferences in vote from {voter}")
+
+    def _calculate_round(self, round_number: int, votes: dict[str, list[str]]) -> RoundResult:
+        """
+        Internal method to calculate a round of rank choice voting
+
+        Args:
+            votes: Dictionary of votes to process.
+        """
+        # Count first preferences
+        first_prefs = [prefs[0] for prefs in votes.values() if prefs]
+        vote_counts = dict(Counter(first_prefs))
+
+        # Fill in zero counts for options with no votes
+        for option in self._options:
+            if option not in vote_counts:
+                vote_counts[option] = 0
+
+        total_votes = sum(vote_counts.values())
+        majority_threshold = total_votes / 2
+
+        # Check for winner
+        for option, count in vote_counts.items():
+            if count > majority_threshold:
+                return RoundResult(
+                    round_number=round_number,
+                    vote_counts=vote_counts,
+                    eliminated_option=None,
+                    winner=option
+                )
+
+        # No winner, eliminate option with the fewest votes
+        # In case of tie, eliminate the one that appears last in original options
+        min_votes = min(count for count in vote_counts.values() if count > 0)
+        for option in reversed(self._options):
+            if vote_counts[option] == min_votes:
+                return RoundResult(
+                    round_number=round_number,
+                    vote_counts=vote_counts,
+                    eliminated_option=option,
+                    winner=None
+                )
