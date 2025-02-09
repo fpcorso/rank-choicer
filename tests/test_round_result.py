@@ -8,13 +8,13 @@ def test_round_result_initialization():
     result = RoundResult(
         round_number=1,
         vote_counts=vote_counts,
-        eliminated_option="Option B",
+        eliminated_options=["Option B"],
         winner=None,
     )
 
     assert result.round_number == 1
     assert result.vote_counts == vote_counts
-    assert result.eliminated_option == "Option B"
+    assert result.eliminated_options == ["Option B"]
     assert result.winner is None
 
 

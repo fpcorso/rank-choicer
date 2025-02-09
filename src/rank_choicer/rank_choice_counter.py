@@ -1,12 +1,19 @@
 from collections import Counter
+import random
 
 from src.rank_choicer.round_result import RoundResult
+from src.rank_choicer.elimination_strategy import EliminationStrategy
 
 
 class RankChoiceCounter:
-    def __init__(self, options: list[str]) -> None:
+    def __init__(self, options: list[str], elimination_strategy: EliminationStrategy = EliminationStrategy.BATCH) -> None:
         """
         Sets up counter.
+
+        Args:
+            options: List of strings representing valid voting options
+            elimination_strategy: Strategy to use when there's a tie for elimination
+                                (defaults to BATCH - eliminate all tied candidates)
 
         Raises:
             ValueError: If options list is empty or contains duplicates
@@ -26,6 +33,7 @@ class RankChoiceCounter:
 
         # Initialize results
         self._round_results: list[RoundResult] = []
+        self._elimination_strategy = elimination_strategy
 
     @property
     def options(self) -> list[str]:
@@ -111,11 +119,11 @@ class RankChoiceCounter:
                 winner = round_result.winner
                 break
 
-            # Remove the eliminated option from all vote lists
-            eliminated = round_result.eliminated_option
-            for prefs in current_votes.values():
-                if eliminated in prefs:
-                    prefs.remove(eliminated)
+            # Remove all eliminated options from vote lists (will be only 1 unless there is a tie)
+            for eliminated in round_result.eliminated_options:
+                for prefs in current_votes.values():
+                    if eliminated in prefs:
+                        prefs.remove(eliminated)
 
             round_num += 1
 
@@ -191,18 +199,29 @@ class RankChoiceCounter:
                 return RoundResult(
                     round_number=round_number,
                     vote_counts=vote_counts,
-                    eliminated_option=None,
+                    eliminated_options=None,
                     winner=option
                 )
 
-        # No winner, eliminate option with the fewest votes
-        # In case of tie, eliminate the one that appears last in original options
-        min_votes = min(count for count in vote_counts.values() if count > 0)
-        for option in reversed(self._options):
-            if vote_counts[option] == min_votes:
-                return RoundResult(
-                    round_number=round_number,
-                    vote_counts=vote_counts,
-                    eliminated_option=option,
-                    winner=None
-                )
+        # No winner, find the candidate(s) that had fewest votes.
+        min_votes = min(count for count in vote_counts.values())
+        tied_for_last = [opt for opt, count in vote_counts.items()
+                         if count == min_votes]
+
+        if self._elimination_strategy == EliminationStrategy.BATCH:
+            # Eliminate all candidates tied for last
+            return RoundResult(
+                round_number=round_number,
+                vote_counts=vote_counts,
+                winner=None,
+                eliminated_options=tied_for_last
+            )
+        else:  # RANDOM strategy
+            # Randomly choose one candidate to eliminate
+            eliminated = random.choice(tied_for_last)
+            return RoundResult(
+                round_number=round_number,
+                vote_counts=vote_counts,
+                winner=None,
+                eliminated_options=[eliminated]
+            )

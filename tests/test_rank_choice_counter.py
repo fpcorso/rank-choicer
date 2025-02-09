@@ -171,7 +171,7 @@ def test_single_round_clear_winner():
 
     assert result.vote_counts == {"A": 3, "B": 0, "C": 0}
     assert result.winner == "A"
-    assert result.eliminated_option is None
+    assert result.eliminated_options is None
 
 def test_single_round_no_winner():
     """Test round calculation when no candidate has majority"""
@@ -187,7 +187,7 @@ def test_single_round_no_winner():
 
     assert result.vote_counts == {"A": 2, "B": 2, "C": 1}
     assert result.winner is None
-    assert result.eliminated_option == "C"
+    assert result.eliminated_options == ["C"]
 
 
 def test_single_round_with_eliminated_candidates():
@@ -205,7 +205,7 @@ def test_single_round_with_eliminated_candidates():
 
     assert result.vote_counts == {"A": 2, "B": 3, "C": 0} # C should still be present in totals
     assert result.winner == "B"
-    assert result.eliminated_option is None
+    assert result.eliminated_options is None
 
 
 def test_count_votes_immediate_winner():
@@ -232,7 +232,8 @@ def test_count_votes_two_rounds():
         "v1": ["A", "B", "C"],
         "v2": ["B", "A", "C"],
         "v3": ["C", "A", "B"],
-        "v4": ["A", "C", "B"]
+        "v4": ["A", "C", "B"],
+        "v5": ["B", "C", "A"]
     }
     winner = counter.count_votes(votes)
     results = counter.get_round_results()
@@ -241,7 +242,7 @@ def test_count_votes_two_rounds():
     assert len(results) == 2
     # First round should have eliminated C
     assert results[0].winner is None
-    assert results[0].eliminated_option == 'C'
+    assert results[0].eliminated_options == ['C']
     assert results[0].round_number == 1
     # Second round should have a winner
     assert results[1].winner == winner

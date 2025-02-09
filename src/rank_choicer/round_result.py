@@ -7,8 +7,8 @@ class RoundResult:
 
     round_number: int
     vote_counts: dict[str, int]
-    eliminated_option: str | None
     winner: str | None
+    eliminated_options: list[str] | None
 
     def __post_init__(self):
         """Validate the data after initialization"""
