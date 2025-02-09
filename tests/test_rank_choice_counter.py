@@ -1,5 +1,6 @@
 import pytest
 from src.rank_choicer.rank_choice_counter import RankChoiceCounter
+from src.rank_choicer.elimination_strategy import EliminationStrategy
 
 
 def test_initialize_with_valid_options():
@@ -247,3 +248,46 @@ def test_count_votes_two_rounds():
     # Second round should have a winner
     assert results[1].winner == winner
     assert results[1].round_number == 2
+
+
+def test_batch_elimination_strategy():
+    """Test that batch elimination works correctly"""
+    counter = RankChoiceCounter(
+        ["A", "B", "C", "D"],
+        elimination_strategy=EliminationStrategy.BATCH
+    )
+    votes = {
+        "v1": ["A", "B", "C", "D"],
+        "v2": ["A", "B", "C", "D"],
+        "v3": ["B", "C", "D", "A"],
+        "v4": ["B", "D", "A", "C"],
+        "v5": ["C", "A", "B", "D"],
+        "v6": ["D", "A", "B", "C"]
+    }
+    counter.count_votes(votes)
+    first_round = counter.get_round_results()[0]
+
+    # Should eliminate both C and D if they're tied
+    assert len(first_round.eliminated_options) > 1
+    assert first_round.eliminated_options == ["C", "D"]
+
+
+def test_random_elimination_strategy():
+    """Test that random elimination works correctly"""
+    counter = RankChoiceCounter(
+        ["A", "B", "C", "D"],
+        elimination_strategy=EliminationStrategy.RANDOM
+    )
+    votes = {
+        "v1": ["A", "B", "C", "D"],
+        "v2": ["A", "B", "C", "D"],
+        "v3": ["B", "C", "D", "A"],
+        "v4": ["B", "D", "A", "C"],
+        "v5": ["C", "A", "B", "D"],
+        "v6": ["D", "A", "B", "C"]
+    }
+    counter.count_votes(votes)
+    first_round = counter.get_round_results()[0]
+
+    # Should only eliminate one candidate
+    assert len(first_round.eliminated_options) == 1

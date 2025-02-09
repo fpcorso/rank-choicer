@@ -195,7 +195,7 @@ class RankChoiceCounter:
 
         # Check for winner
         for option, count in vote_counts.items():
-            if count > majority_threshold:
+            if count >= majority_threshold:
                 return RoundResult(
                     round_number=round_number,
                     vote_counts=vote_counts,
