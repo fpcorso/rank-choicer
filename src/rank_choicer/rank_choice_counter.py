@@ -6,7 +6,7 @@ from .elimination_strategy import EliminationStrategy
 
 
 class RankChoiceCounter:
-    def __init__(self, options: list[str], elimination_strategy: EliminationStrategy = EliminationStrategy.BATCH) -> None:
+    def __init__(self, options: list[str], elimination_strategy: EliminationStrategy = EliminationStrategy.RANDOM) -> None:
         """
         Sets up counter.
 
