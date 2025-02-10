@@ -163,16 +163,13 @@ def test_validate_votes_partial_preferences():
 def test_single_round_clear_winner():
     """Test round calculation when there's a clear majority winner"""
     counter = RankChoiceCounter(["A", "B", "C"])
-    votes = {
-        "v1": ["A", "B", "C"],
-        "v2": ["A", "C"],
-        "v3": ["A", "B"]
-    }
+    votes = {"v1": ["A", "B", "C"], "v2": ["A", "C"], "v3": ["A", "B"]}
     result = counter._calculate_round(1, votes)
 
     assert result.vote_counts == {"A": 3, "B": 0, "C": 0}
     assert result.winner == "A"
     assert result.eliminated_options is None
+
 
 def test_single_round_no_winner():
     """Test round calculation when no candidate has majority"""
@@ -182,7 +179,7 @@ def test_single_round_no_winner():
         "v2": ["A", "C", "B"],
         "v3": ["B", "C", "A"],
         "v4": ["B", "C", "A"],
-        "v5": ["C", "B", "A"]
+        "v5": ["C", "B", "A"],
     }
     result = counter._calculate_round(1, votes)
 
@@ -200,11 +197,15 @@ def test_single_round_with_eliminated_candidates():
         "v2": ["A", "B"],
         "v3": ["B", "A"],
         "v4": ["B", "A"],
-        "v5": ["B", "A"]
+        "v5": ["B", "A"],
     }
     result = counter._calculate_round(2, votes)
 
-    assert result.vote_counts == {"A": 2, "B": 3, "C": 0} # C should still be present in totals
+    assert result.vote_counts == {
+        "A": 2,
+        "B": 3,
+        "C": 0,
+    }  # C should still be present in totals
     assert result.winner == "B"
     assert result.eliminated_options is None
 
@@ -212,11 +213,7 @@ def test_single_round_with_eliminated_candidates():
 def test_count_votes_immediate_winner():
     """Test when a candidate wins in the first round"""
     counter = RankChoiceCounter(["A", "B", "C"])
-    votes = {
-        "v1": ["A", "B", "C"],
-        "v2": ["A", "C", "B"],
-        "v3": ["A", "B", "C"]
-    }
+    votes = {"v1": ["A", "B", "C"], "v2": ["A", "C", "B"], "v3": ["A", "B", "C"]}
     winner = counter.count_votes(votes)
     results = counter.get_round_results()
 
@@ -234,7 +231,7 @@ def test_count_votes_two_rounds():
         "v2": ["B", "A", "C"],
         "v3": ["C", "A", "B"],
         "v4": ["A", "C", "B"],
-        "v5": ["B", "C", "A"]
+        "v5": ["B", "C", "A"],
     }
     winner = counter.count_votes(votes)
     results = counter.get_round_results()
@@ -243,11 +240,12 @@ def test_count_votes_two_rounds():
     assert len(results) == 2
     # First round should have eliminated C
     assert results[0].winner is None
-    assert results[0].eliminated_options == ['C']
+    assert results[0].eliminated_options == ["C"]
     assert results[0].round_number == 1
     # Second round should have a winner
     assert results[1].winner == winner
     assert results[1].round_number == 2
+
 
 def test_count_votes_three_rounds():
     """Test when winner is determined after two eliminations"""
@@ -260,7 +258,7 @@ def test_count_votes_three_rounds():
         "v5": ["B", "A", "C", "D"],
         "v6": ["C", "A", "B", "D"],
         "v7": ["C", "A", "B", "D"],
-        "v8": ["D", "B", "A", "C"]
+        "v8": ["D", "B", "A", "C"],
     }
     winner = counter.count_votes(votes)
     results = counter.get_round_results()
@@ -269,21 +267,21 @@ def test_count_votes_three_rounds():
     assert len(results) == 3
     # First round should have eliminated D
     assert results[0].winner is None
-    assert results[0].eliminated_options == ['D']
+    assert results[0].eliminated_options == ["D"]
     assert results[0].round_number == 1
     # Second round should have eliminated C
     assert results[1].winner is None
-    assert results[1].eliminated_options == ['C']
+    assert results[1].eliminated_options == ["C"]
     assert results[1].round_number == 2
     # Third round should have a winner
     assert results[2].winner == winner
     assert results[2].round_number == 3
 
+
 def test_batch_elimination_strategy():
     """Test that batch elimination works correctly"""
     counter = RankChoiceCounter(
-        ["A", "B", "C", "D"],
-        elimination_strategy=EliminationStrategy.BATCH
+        ["A", "B", "C", "D"], elimination_strategy=EliminationStrategy.BATCH
     )
     votes = {
         "v1": ["A", "B", "C", "D"],
@@ -291,7 +289,7 @@ def test_batch_elimination_strategy():
         "v3": ["B", "C", "D", "A"],
         "v4": ["B", "D", "A", "C"],
         "v5": ["C", "A", "B", "D"],
-        "v6": ["D", "A", "B", "C"]
+        "v6": ["D", "A", "B", "C"],
     }
     counter.count_votes(votes)
     first_round = counter.get_round_results()[0]
@@ -304,8 +302,7 @@ def test_batch_elimination_strategy():
 def test_random_elimination_strategy():
     """Test that random elimination works correctly"""
     counter = RankChoiceCounter(
-        ["A", "B", "C", "D"],
-        elimination_strategy=EliminationStrategy.RANDOM
+        ["A", "B", "C", "D"], elimination_strategy=EliminationStrategy.RANDOM
     )
     votes = {
         "v1": ["A", "B", "C", "D"],
@@ -313,7 +310,7 @@ def test_random_elimination_strategy():
         "v3": ["B", "C", "D", "A"],
         "v4": ["B", "D", "A", "C"],
         "v5": ["C", "A", "B", "D"],
-        "v6": ["D", "A", "B", "C"]
+        "v6": ["D", "A", "B", "C"],
     }
     counter.count_votes(votes)
     first_round = counter.get_round_results()[0]
@@ -321,11 +318,11 @@ def test_random_elimination_strategy():
     # Should only eliminate one candidate
     assert len(first_round.eliminated_options) == 1
 
+
 def test_tie_batch_elimination_strategy():
     """Test a final tie on batch elimination works correctly"""
     counter = RankChoiceCounter(
-        ["A", "B", "C", "D"],
-        elimination_strategy=EliminationStrategy.BATCH
+        ["A", "B", "C", "D"], elimination_strategy=EliminationStrategy.BATCH
     )
     votes = {
         "v1": ["A", "B", "C", "D"],
@@ -335,7 +332,7 @@ def test_tie_batch_elimination_strategy():
         "v5": ["B", "A", "C", "D"],
         "v6": ["C", "A", "B", "D"],
         "v7": ["C", "B", "A", "D"],
-        "v8": ["D", "B", "A", "C"]
+        "v8": ["D", "B", "A", "C"],
     }
 
     with pytest.raises(ValueError) as exc_info:

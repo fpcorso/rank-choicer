@@ -6,7 +6,11 @@ from .elimination_strategy import EliminationStrategy
 
 
 class RankChoiceCounter:
-    def __init__(self, options: list[str], elimination_strategy: EliminationStrategy = EliminationStrategy.RANDOM) -> None:
+    def __init__(
+        self,
+        options: list[str],
+        elimination_strategy: EliminationStrategy = EliminationStrategy.RANDOM,
+    ) -> None:
         """
         Sets up counter.
 
@@ -180,7 +184,9 @@ class RankChoiceCounter:
             if len(set(preferences)) != len(preferences):
                 raise ValueError(f"Duplicate preferences in vote from {voter}")
 
-    def _calculate_round(self, round_number: int, votes: dict[str, list[str]]) -> RoundResult:
+    def _calculate_round(
+        self, round_number: int, votes: dict[str, list[str]]
+    ) -> RoundResult:
         """
         Internal method to calculate a round of rank choice voting
 
@@ -206,13 +212,20 @@ class RankChoiceCounter:
                     round_number=round_number,
                     vote_counts=vote_counts,
                     eliminated_options=None,
-                    winner=option
+                    winner=option,
                 )
 
         # No winner, find the candidate(s) that had fewest votes.
-        min_votes = min(count for option, count in vote_counts.items() if option not in self._eliminated_options)
-        tied_for_last = [option for option, count in vote_counts.items()
-                         if count == min_votes and option not in self._eliminated_options]
+        min_votes = min(
+            count
+            for option, count in vote_counts.items()
+            if option not in self._eliminated_options
+        )
+        tied_for_last = [
+            option
+            for option, count in vote_counts.items()
+            if count == min_votes and option not in self._eliminated_options
+        ]
 
         if self._elimination_strategy == EliminationStrategy.BATCH:
             # Eliminate all candidates tied for last
@@ -220,7 +233,7 @@ class RankChoiceCounter:
                 round_number=round_number,
                 vote_counts=vote_counts,
                 winner=None,
-                eliminated_options=tied_for_last
+                eliminated_options=tied_for_last,
             )
         else:  # RANDOM strategy
             # Randomly choose one candidate to eliminate
@@ -229,5 +242,5 @@ class RankChoiceCounter:
                 round_number=round_number,
                 vote_counts=vote_counts,
                 winner=None,
-                eliminated_options=[eliminated]
+                eliminated_options=[eliminated],
             )
