@@ -34,6 +34,7 @@ class RankChoiceCounter:
         # Initialize results
         self._round_results: list[RoundResult] = []
         self._elimination_strategy = elimination_strategy
+        self._eliminated_options = []
 
     @property
     def options(self) -> list[str]:
@@ -91,6 +92,7 @@ class RankChoiceCounter:
     def clear_results(self) -> None:
         """Clear all stored round results."""
         self._round_results = []
+        self._eliminated_options = []
 
     def count_votes(self, votes: dict[str, list[str]]) -> str:
         """
@@ -121,9 +123,13 @@ class RankChoiceCounter:
 
             # Remove all eliminated options from vote lists (will be only 1 unless there is a tie)
             for eliminated in round_result.eliminated_options:
+                self._eliminated_options.append(eliminated)
                 for prefs in current_votes.values():
                     if eliminated in prefs:
                         prefs.remove(eliminated)
+
+            if len(self._eliminated_options) == len(self._options):
+                raise ValueError("Ended with a tie. Review round results.")
 
             round_num += 1
 
@@ -195,7 +201,7 @@ class RankChoiceCounter:
 
         # Check for winner
         for option, count in vote_counts.items():
-            if count >= majority_threshold:
+            if count > majority_threshold:
                 return RoundResult(
                     round_number=round_number,
                     vote_counts=vote_counts,
@@ -204,9 +210,9 @@ class RankChoiceCounter:
                 )
 
         # No winner, find the candidate(s) that had fewest votes.
-        min_votes = min(count for count in vote_counts.values())
-        tied_for_last = [opt for opt, count in vote_counts.items()
-                         if count == min_votes]
+        min_votes = min(count for option, count in vote_counts.items() if option not in self._eliminated_options)
+        tied_for_last = [option for option, count in vote_counts.items()
+                         if count == min_votes and option not in self._eliminated_options]
 
         if self._elimination_strategy == EliminationStrategy.BATCH:
             # Eliminate all candidates tied for last

@@ -249,6 +249,35 @@ def test_count_votes_two_rounds():
     assert results[1].winner == winner
     assert results[1].round_number == 2
 
+def test_count_votes_three_rounds():
+    """Test when winner is determined after two eliminations"""
+    counter = RankChoiceCounter(["A", "B", "C", "D"])
+    votes = {
+        "v1": ["A", "B", "C", "D"],
+        "v2": ["A", "B", "C", "D"],
+        "v3": ["A", "C", "D", "B"],
+        "v4": ["B", "D", "A", "C"],
+        "v5": ["B", "A", "C", "D"],
+        "v6": ["C", "A", "B", "D"],
+        "v7": ["C", "A", "B", "D"],
+        "v8": ["D", "B", "A", "C"]
+    }
+    winner = counter.count_votes(votes)
+    results = counter.get_round_results()
+
+    assert winner == "A"
+    assert len(results) == 3
+    # First round should have eliminated D
+    assert results[0].winner is None
+    assert results[0].eliminated_options == ['D']
+    assert results[0].round_number == 1
+    # Second round should have eliminated C
+    assert results[1].winner is None
+    assert results[1].eliminated_options == ['C']
+    assert results[1].round_number == 2
+    # Third round should have a winner
+    assert results[2].winner == winner
+    assert results[2].round_number == 3
 
 def test_batch_elimination_strategy():
     """Test that batch elimination works correctly"""
@@ -291,3 +320,24 @@ def test_random_elimination_strategy():
 
     # Should only eliminate one candidate
     assert len(first_round.eliminated_options) == 1
+
+def test_tie_batch_elimination_strategy():
+    """Test a final tie on batch elimination works correctly"""
+    counter = RankChoiceCounter(
+        ["A", "B", "C", "D"],
+        elimination_strategy=EliminationStrategy.BATCH
+    )
+    votes = {
+        "v1": ["A", "B", "C", "D"],
+        "v2": ["A", "B", "C", "D"],
+        "v3": ["A", "C", "D", "B"],
+        "v4": ["B", "D", "A", "C"],
+        "v5": ["B", "A", "C", "D"],
+        "v6": ["C", "A", "B", "D"],
+        "v7": ["C", "B", "A", "D"],
+        "v8": ["D", "B", "A", "C"]
+    }
+
+    with pytest.raises(ValueError) as exc_info:
+        counter.count_votes(votes)
+    assert "Ended with a tie. Review round results." in str(exc_info.value)
