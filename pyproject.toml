@@ -1,14 +1,20 @@
 [project]
 name = "rank-choicer"
-version = "0.1.0"
+version = "0.1.2"
 description = "A Python package for calculating the winner of a poll using rank choice voting (Instant-runoff voting)."
 authors = [
     {name = "Frank Corso",email = "frank@frankcorso.me"}
 ]
 readme = "README.md"
+license = {text = "MIT License"}
 requires-python = ">=3.10"
+keywords = [ "poll", "vote", "instant-runoff", "rank choice" ]
 dependencies = [
 ]
+
+[project.urls]
+repository = "https://github.com/fpcorso/rank-choicer"
+
 
 [tool.poetry]
 packages = [{include = "rank_choicer", from = "src"}]
