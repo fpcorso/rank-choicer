@@ -8,7 +8,7 @@ Use pip to install:
 
 
 ```shell
-pip install XXXXX
+pip install rank-choicer
 ```
 
 ## Usage
