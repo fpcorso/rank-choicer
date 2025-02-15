@@ -1,6 +1,6 @@
 [project]
 name = "rank-choicer"
-version = "1.0.0"
+version = "1.0.1"
 description = "A Python package for calculating the winner of a poll using rank choice voting (Instant-runoff voting)."
 authors = [
     {name = "Frank Corso",email = "frank@frankcorso.me"}
