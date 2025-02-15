@@ -33,7 +33,7 @@ votes = {
 winner = counter.count_votes(votes)
 print(f"Winner is: {winner}")
 ```
-```shell
+```text
 Winner is A
 ```
 
@@ -46,8 +46,9 @@ results = counter.get_round_results()
 print(f"Eliminated in the first round: {results[0].eliminated_options}")
 print(results[0].vote_counts)
 ```
-```shell
-Eliminated in the first round: [C]
+```text
+Eliminated in the first round: ['C']
+{'A': 2, 'B': 2, 'C': 1}
 ```
 
 ### Handling Ties In Elimination
