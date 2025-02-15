@@ -1,1 +1,5 @@
-.idea
+# Builds
+dist
+
+# IDE
+idea
