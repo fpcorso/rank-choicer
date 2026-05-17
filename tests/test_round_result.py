@@ -41,10 +41,18 @@ def test_vote_counts_immutability():
     assert result.vote_counts["Option A"] == 10
 
 
-def test_invalid_round_number():
-    """Test that round_number must be a positive integer"""
-    with pytest.raises(ValueError):
+def test_invalid_round_number_negative():
+    """Test that a negative round number raises ValueError"""
+    with pytest.raises(ValueError) as exc_info:
         RoundResult(-1, {"A": 10}, None, None)
+    assert "Round number must be a positive integer" in str(exc_info.value)
+
+
+def test_invalid_round_number_zero():
+    """Test that round number 0 raises ValueError"""
+    with pytest.raises(ValueError) as exc_info:
+        RoundResult(0, {"A": 10}, None, None)
+    assert "Round number must be a positive integer" in str(exc_info.value)
 
 
 def test_to_dict_with_winner():
