@@ -205,12 +205,8 @@ class RankChoiceCounter:
         """
         # Count first preferences
         first_prefs = [prefs[0] for prefs in votes.values() if prefs]
-        vote_counts = dict(Counter(first_prefs))
-
-        # Fill in zero counts for options with no votes
-        for option in self._options:
-            if option not in vote_counts:
-                vote_counts[option] = 0
+        vote_counts = Counter(dict.fromkeys(self._options, 0))
+        vote_counts.update(first_prefs)
 
         total_votes = sum(vote_counts.values())
         majority_threshold = total_votes / 2
