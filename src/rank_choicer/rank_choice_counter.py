@@ -38,7 +38,7 @@ class RankChoiceCounter:
         # Initialize results
         self._round_results: list[RoundResult] = []
         self._elimination_strategy = elimination_strategy
-        self._eliminated_options = []
+        self._eliminated_options: set[str] = set()
 
     @property
     def options(self) -> list[str]:
@@ -96,7 +96,7 @@ class RankChoiceCounter:
     def clear_results(self) -> None:
         """Clear all stored round results."""
         self._round_results = []
-        self._eliminated_options = []
+        self._eliminated_options: set[str] = set()
 
     def count_votes(self, votes: dict[str, list[str]]) -> str:
         """
@@ -127,8 +127,8 @@ class RankChoiceCounter:
 
             # Remove all eliminated options from vote lists
             # (will be only 1 unless there is a tie)
+            self._eliminated_options.update(round_result.eliminated_options)
             for eliminated in round_result.eliminated_options:
-                self._eliminated_options.append(eliminated)
                 for prefs in current_votes.values():
                     if eliminated in prefs:
                         prefs.remove(eliminated)
@@ -159,7 +159,7 @@ class RankChoiceCounter:
         Raises:
             ValueError: If any vote contains invalid options or is malformed
         """
-        options_set = set(self._options.copy())
+        options_set = set(self._options)
         for voter, preferences in votes.items():
             if not isinstance(voter, str) or not voter.strip():
                 raise ValueError("Invalid voter")
