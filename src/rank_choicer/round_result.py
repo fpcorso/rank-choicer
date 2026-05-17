@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 
 @dataclass
@@ -17,3 +17,7 @@ class RoundResult:
 
         # Make a copy of vote_counts to prevent external modification
         self.vote_counts = self.vote_counts.copy()
+
+    def to_dict(self) -> dict:
+        """Return the round result as a dictionary."""
+        return asdict(self)
