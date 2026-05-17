@@ -1,8 +1,8 @@
-from collections import Counter
 import random
+from collections import Counter
 
-from .round_result import RoundResult
 from .elimination_strategy import EliminationStrategy
+from .round_result import RoundResult
 
 
 class RankChoiceCounter:
@@ -17,7 +17,7 @@ class RankChoiceCounter:
         Args:
             options: List of strings representing valid voting options
             elimination_strategy: Strategy to use when there's a tie for elimination
-                                (defaults to BATCH - eliminate all tied candidates)
+                                (defaults to RANDOM - eliminate 1 tied option randomly)
 
         Raises:
             ValueError: If options list is empty or contains duplicates
@@ -38,7 +38,7 @@ class RankChoiceCounter:
         # Initialize results
         self._round_results: list[RoundResult] = []
         self._elimination_strategy = elimination_strategy
-        self._eliminated_options = []
+        self._eliminated_options: set[str] = set()
 
     @property
     def options(self) -> list[str]:
@@ -58,10 +58,12 @@ class RankChoiceCounter:
         if not new_options:
             raise ValueError("Options list cannot be empty")
 
-        if len(set(new_options)) != len(new_options):
+        sanitized_options = [option.strip() for option in new_options]
+
+        if len(set(sanitized_options)) != len(sanitized_options):
             raise ValueError("Duplicate options are not allowed")
 
-        self._options = new_options.copy()
+        self._options = sanitized_options
 
     def add_option(self, option: str) -> None:
         """
@@ -73,6 +75,8 @@ class RankChoiceCounter:
         Raises:
             ValueError: If option already exists
         """
+        option = option.strip()
+
         if option in self._options:
             raise ValueError("Option already exists")
 
@@ -96,14 +100,14 @@ class RankChoiceCounter:
     def clear_results(self) -> None:
         """Clear all stored round results."""
         self._round_results = []
-        self._eliminated_options = []
+        self._eliminated_options: set[str] = set()
 
     def count_votes(self, votes: dict[str, list[str]]) -> str:
         """
         Counts the votes and returns the winning option
 
         Args:
-            votes: Dictionary of votes to validate
+            votes: Dictionary of votes to count
 
         Raises:
             ValueError: If any vote contains invalid options or is malformed
@@ -125,12 +129,15 @@ class RankChoiceCounter:
                 winner = round_result.winner
                 break
 
-            # Remove all eliminated options from vote lists (will be only 1 unless there is a tie)
-            for eliminated in round_result.eliminated_options:
-                self._eliminated_options.append(eliminated)
-                for prefs in current_votes.values():
-                    if eliminated in prefs:
-                        prefs.remove(eliminated)
+            # Remove all eliminated options from vote lists
+            # (will be only 1 unless there is a tie)
+            self._eliminated_options.update(round_result.eliminated_options)
+            for voter in current_votes:
+                current_votes[voter] = [
+                    preference
+                    for preference in current_votes[voter]
+                    if preference not in self._eliminated_options
+                ]
 
             if len(self._eliminated_options) == len(self._options):
                 raise ValueError("Ended with a tie. Review round results.")
@@ -158,7 +165,10 @@ class RankChoiceCounter:
         Raises:
             ValueError: If any vote contains invalid options or is malformed
         """
-        options_set = set(self._options.copy())
+        if not votes:
+            raise ValueError("Votes dictionary cannot be empty")
+
+        options_set = set(self._options)
         for voter, preferences in votes.items():
             if not isinstance(voter, str) or not voter.strip():
                 raise ValueError("Invalid voter")
@@ -195,12 +205,8 @@ class RankChoiceCounter:
         """
         # Count first preferences
         first_prefs = [prefs[0] for prefs in votes.values() if prefs]
-        vote_counts = dict(Counter(first_prefs))
-
-        # Fill in zero counts for options with no votes
-        for option in self._options:
-            if option not in vote_counts:
-                vote_counts[option] = 0
+        vote_counts = Counter(dict.fromkeys(self._options, 0))
+        vote_counts.update(first_prefs)
 
         total_votes = sum(vote_counts.values())
         majority_threshold = total_votes / 2

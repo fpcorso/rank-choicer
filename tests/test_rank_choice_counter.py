@@ -1,6 +1,7 @@
 import pytest
-from src.rank_choicer.rank_choice_counter import RankChoiceCounter
+
 from src.rank_choicer.elimination_strategy import EliminationStrategy
+from src.rank_choicer.rank_choice_counter import RankChoiceCounter
 
 
 def test_initialize_with_valid_options():
@@ -100,6 +101,14 @@ def test_validate_votes_invalid_option():
     with pytest.raises(ValueError) as exc_info:
         counter._validate_votes(votes)
     assert "Invalid options in vote from voter2" in str(exc_info.value)
+
+
+def test_validate_votes_empty_votes_dict():
+    """Test that an empty votes dictionary raises ValueError"""
+    counter = RankChoiceCounter(["Option A", "Option B", "Option C"])
+    with pytest.raises(ValueError) as exc_info:
+        counter._validate_votes({})
+    assert "Votes dictionary cannot be empty" in str(exc_info.value)
 
 
 def test_validate_votes_duplicate_preferences():

@@ -1,4 +1,5 @@
 import pytest
+
 from src.rank_choicer.round_result import RoundResult
 
 
@@ -40,7 +41,49 @@ def test_vote_counts_immutability():
     assert result.vote_counts["Option A"] == 10
 
 
-def test_invalid_round_number():
-    """Test that round_number must be a positive integer"""
-    with pytest.raises(ValueError):
+def test_invalid_round_number_negative():
+    """Test that a negative round number raises ValueError"""
+    with pytest.raises(ValueError) as exc_info:
         RoundResult(-1, {"A": 10}, None, None)
+    assert "Round number must be a positive integer" in str(exc_info.value)
+
+
+def test_invalid_round_number_zero():
+    """Test that round number 0 raises ValueError"""
+    with pytest.raises(ValueError) as exc_info:
+        RoundResult(0, {"A": 10}, None, None)
+    assert "Round number must be a positive integer" in str(exc_info.value)
+
+
+def test_to_dict_with_winner():
+    """Test that to_dict returns correct structure when round has a winner"""
+    result = RoundResult(
+        round_number=2,
+        vote_counts={"Option A": 3, "Option B": 2},
+        winner="Option A",
+        eliminated_options=None,
+    )
+    result_dict = result.to_dict()
+
+    assert isinstance(result_dict, dict)
+    assert result_dict["round_number"] == 2
+    assert result_dict["vote_counts"] == {"Option A": 3, "Option B": 2}
+    assert result_dict["winner"] == "Option A"
+    assert result_dict["eliminated_options"] is None
+
+
+def test_to_dict_with_elimination():
+    """Test that to_dict returns correct structure when round has eliminations"""
+    result = RoundResult(
+        round_number=1,
+        vote_counts={"Option A": 3, "Option B": 1, "Option C": 1},
+        winner=None,
+        eliminated_options=["Option B", "Option C"],
+    )
+    result_dict = result.to_dict()
+
+    assert isinstance(result_dict, dict)
+    assert result_dict["round_number"] == 1
+    assert result_dict["vote_counts"] == {"Option A": 3, "Option B": 1, "Option C": 1}
+    assert result_dict["winner"] is None
+    assert result_dict["eliminated_options"] == ["Option B", "Option C"]
