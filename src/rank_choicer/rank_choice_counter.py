@@ -128,10 +128,12 @@ class RankChoiceCounter:
             # Remove all eliminated options from vote lists
             # (will be only 1 unless there is a tie)
             self._eliminated_options.update(round_result.eliminated_options)
-            for eliminated in round_result.eliminated_options:
-                for prefs in current_votes.values():
-                    if eliminated in prefs:
-                        prefs.remove(eliminated)
+            for voter in current_votes:
+                current_votes[voter] = [
+                    preference
+                    for preference in current_votes[voter]
+                    if preference not in self._eliminated_options
+                ]
 
             if len(self._eliminated_options) == len(self._options):
                 raise ValueError("Ended with a tie. Review round results.")
