@@ -1,4 +1,5 @@
 import pytest
+
 from src.rank_choicer.round_result import RoundResult
 
 

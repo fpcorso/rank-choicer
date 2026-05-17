@@ -1,6 +1,7 @@
 import pytest
-from src.rank_choicer.rank_choice_counter import RankChoiceCounter
+
 from src.rank_choicer.elimination_strategy import EliminationStrategy
+from src.rank_choicer.rank_choice_counter import RankChoiceCounter
 
 
 def test_initialize_with_valid_options():

@@ -1,8 +1,8 @@
-from collections import Counter
 import random
+from collections import Counter
 
-from .round_result import RoundResult
 from .elimination_strategy import EliminationStrategy
+from .round_result import RoundResult
 
 
 class RankChoiceCounter:
@@ -125,7 +125,8 @@ class RankChoiceCounter:
                 winner = round_result.winner
                 break
 
-            # Remove all eliminated options from vote lists (will be only 1 unless there is a tie)
+            # Remove all eliminated options from vote lists
+            # (will be only 1 unless there is a tie)
             for eliminated in round_result.eliminated_options:
                 self._eliminated_options.append(eliminated)
                 for prefs in current_votes.values():

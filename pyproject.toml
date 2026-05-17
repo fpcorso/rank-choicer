@@ -21,11 +21,29 @@ packages = [{include = "rank_choicer", from = "src"}]
 
 
 [tool.poetry.group.dev.dependencies]
-black = "^25.1.0"
+ruff = "^0.11.0"
 
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.4"
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "UP",
+    "B",
+    "RUF",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
