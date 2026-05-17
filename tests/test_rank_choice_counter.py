@@ -103,6 +103,14 @@ def test_validate_votes_invalid_option():
     assert "Invalid options in vote from voter2" in str(exc_info.value)
 
 
+def test_validate_votes_empty_votes_dict():
+    """Test that an empty votes dictionary raises ValueError"""
+    counter = RankChoiceCounter(["Option A", "Option B", "Option C"])
+    with pytest.raises(ValueError) as exc_info:
+        counter._validate_votes({})
+    assert "Votes dictionary cannot be empty" in str(exc_info.value)
+
+
 def test_validate_votes_duplicate_preferences():
     """Test that votes containing duplicate preferences raise ValueError"""
     counter = RankChoiceCounter(["Option A", "Option B", "Option C"])
